@@ -1,0 +1,16 @@
+@media (max-width:1600px) {
+.banner {
+    width: 100%;
+    font-size: clamp(2rem, 20vw, 18.5rem); /* Minimum, preferred, maximum font-size */
+    font-weight: bold;
+    color: #F5F5FF;
+    text-align: end;
+    line-height: 0.75;
+    opacity: 40%;
+    margin-right: 2rem;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+}

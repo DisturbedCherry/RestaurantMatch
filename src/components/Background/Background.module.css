@@ -1,0 +1,19 @@
+@media (max-width: 1600px){
+.bokehContainer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: -999;
+    min-height: 100%;
+}
+
+.bokehCircle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    mix-blend-mode: screen;
+    width: 50vw;
+    height: 40vw;
+}
+
+}

@@ -1,0 +1,41 @@
+@media (max-width: 1600px) {
+.aboutContent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 80vh;
+}
+
+.textWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    color: #F5F5FF;
+    text-align: center;
+    max-width: 65%;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    max-width: 40rem;
+    min-width: 25rem;
+    margin-top: 2rem;
+}
+
+.registerWrapper {
+    max-width: 11rem;
+    min-width: 9rem;
+    height: 2.5rem;
+}
+
+.moreWrapper{
+    max-width: 14rem;
+    min-width: 12rem;
+    height: 2.5rem;
+}
+}
