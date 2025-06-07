@@ -1,0 +1,31 @@
+.titleWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 2rem;
+    text-align: center;
+    width: 100%;
+}
+
+.descriptionWrapper {
+    text-align: center;
+    width: 80%;
+}
+
+.listWrapper {
+    width: 80%;
+    text-align: left;
+}
+
+.priceWrapper {
+    font-weight: bold;
+    font-size: 2rem;
+}
+
+.buttonWrapper {
+    width: 80%;
+    height: 2.5rem;
+}

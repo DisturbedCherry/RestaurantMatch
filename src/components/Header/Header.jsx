@@ -3,7 +3,7 @@ import Logo from '../../assets/restaurant_match_logo_white_noborder.svg'
 import Button from '../Button/Button';
 
 // Header.jsx
-function Header({ onRegisterClick }) {
+function Header({ onRegisterClick, onLoginClick, onOfferClick}) {
     return(
         <header className={styles.header}>
             <div className={styles.logoBox}>
@@ -21,7 +21,7 @@ function Header({ onRegisterClick }) {
                         color='#F5F5FF' 
                         borderColor='#8E5AFF' 
                         text='Rozpromuj restaurację' 
-                        onClick={() => console.log('Promote Button Clicked')}
+                        onClick={onOfferClick}
                     />
                 </div>
                 <div className={styles.loginButton}>
@@ -30,7 +30,7 @@ function Header({ onRegisterClick }) {
                         color='#F5F5FF' 
                         borderColor='#F5F5FF' 
                         text='Zaloguj się'
-                        onClick={() => console.log('Login Button Clicked')}
+                        onClick={onLoginClick} // ✅ ADD THIS
                     />
                 </div>
                 <div className={styles.registerButton}>
@@ -38,12 +38,13 @@ function Header({ onRegisterClick }) {
                         backgroundColor='#F5F5FF' 
                         color='#1E1825'  
                         text='Zarejestruj się'
-                        onClick={onRegisterClick} // ⬅️ Trigger popup
+                        onClick={onRegisterClick}
                     />
                 </div>
             </div>
         </header>
     )
 }
+
 
 export default Header;

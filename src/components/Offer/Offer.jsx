@@ -1,7 +1,7 @@
 import styles from './Offer.module.css'
 import Button from '../Button/Button';
 
-function Offer() {
+function Offer({ onOfferClick }) {
     return (
         <div className={styles.offerContent}>
             <div className={styles.titleWrapper}>Restauracje</div>
@@ -18,7 +18,14 @@ function Offer() {
                 </ul> 
             </div>
             <div className={styles.registerWrapper}>
-                <Button backgroundColor='rgba(0, 0, 0, 0.1)' color='#F5F5FF' borderColor='#0CBA88' text='Zarejestruj swoją restaurację już dziś' fontSize='1.2rem'/>
+                <Button 
+                    backgroundColor='rgba(0, 0, 0, 0.1)' 
+                    color='#F5F5FF' 
+                    borderColor='#0CBA88' 
+                    text='Zarejestruj swoją restaurację już dziś' 
+                    fontSize='1.2rem'
+                    onClick={onOfferClick}
+                />
             </div>
         </div>
     )

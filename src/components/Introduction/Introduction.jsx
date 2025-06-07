@@ -1,7 +1,7 @@
 import styles from './Introduction.module.css'
 import Button from '../Button/Button'
 
-function Introduction() {
+function Introduction({onRegisterClick}) {
     return (
         <div className={styles.introductionContent}>
             <div className={styles.titleWrapper}>
@@ -41,7 +41,7 @@ function Introduction() {
                 </div>
             </div>
             <div className={styles.registerWrapper}>
-                <Button color='#010102' backgroundColor='#E5E4EF' text='Zarejestruj się' fontSize='1.5rem'/>
+                <Button color='#010102' backgroundColor='#E5E4EF' text='Zarejestruj się' fontSize='1.5rem' onClick={onRegisterClick}/>
             </div>
         </div>
     )

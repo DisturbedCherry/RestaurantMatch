@@ -4,7 +4,6 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    margin-top: 4rem;
 }
 
 .titleWrapper {
@@ -19,11 +18,11 @@
     font-weight: bold;
     max-width: 40rem;
     text-align: center;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 .informationContainer {
-    margin-top: 3rem;
+    margin-top: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -35,7 +34,7 @@
     border: #D5C338 3px solid;
     border-radius: 2rem;
     max-width: 30vw;
-    height: 35vw;
+    height: 25vw;
     margin: 0 2vw;
     padding: 2rem;
     font-size: 1.5rem;
@@ -52,6 +51,6 @@
 .registerWrapper {
     height: 8vh;
     width: 32vh;
-    margin-top: 3rem;
+    margin-top: 1.5rem;
 }
 }

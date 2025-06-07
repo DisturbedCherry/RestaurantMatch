@@ -4,3 +4,9 @@
     align-items: center;
     width: 100%;
 }
+
+.introductionWrapper {
+    margin-top: 3rem;
+    padding-top: 1rem;
+}
+
