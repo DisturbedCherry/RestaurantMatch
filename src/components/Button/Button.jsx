@@ -4,7 +4,7 @@ function Button(props) {
         color: props.color ? props.color : '#010102',
         border: props.borderColor ? `3px solid ${props.borderColor}` : 'none',
         fontSize: props.fontSize ? props.fontSize : '0.9rem',
-        borderRadius: '5rem',
+        borderRadius: props.borderRadius ? props.borderRadius : '5rem',
         width: '100%',
         height: '100%',
         fontWeight: 'bold',

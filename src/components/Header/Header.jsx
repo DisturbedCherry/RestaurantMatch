@@ -2,7 +2,8 @@ import styles from './Header.module.css'
 import Logo from '../../assets/restaurant_match_logo_white_noborder.svg'
 import Button from '../Button/Button';
 
-function Header() {
+// Header.jsx
+function Header({ onRegisterClick }) {
     return(
         <header className={styles.header}>
             <div className={styles.logoBox}>
@@ -37,7 +38,7 @@ function Header() {
                         backgroundColor='#F5F5FF' 
                         color='#1E1825'  
                         text='Zarejestruj się'
-                        onClick={() => console.log('Register Button Clicked')}
+                        onClick={onRegisterClick} // ⬅️ Trigger popup
                     />
                 </div>
             </div>
