@@ -98,4 +98,18 @@
     padding-left: 1rem;
     border: #B5B3BF 2px solid;
 }
+
+.errorPopup {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ff4d4f;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
 }
