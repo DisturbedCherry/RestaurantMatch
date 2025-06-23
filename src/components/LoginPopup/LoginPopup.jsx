@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../services/firebaseConfig';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth, db } from '../../services/firebaseConfig';
+import { doc, setDoc } from "firebase/firestore";
 import styles from './LoginPopup.module.css';
 import Button from '../Button/Button';
 
@@ -12,7 +13,14 @@ function LoginPopup({ onClose, onRegisterClick }) {
     const handleLogin = async () => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
             const idToken = await userCredential.user.getIdToken();
+
+            // Aktualizuj dane użytkownika w Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                lastLogin: new Date(),
+                email: user.email
+            }, { merge: true });
             localStorage.setItem('token', idToken);
 
             onClose(); // zamknij popup po zalogowaniu
@@ -22,7 +30,30 @@ function LoginPopup({ onClose, onRegisterClick }) {
             setTimeout(() => setError(''), 4000);
         }
     };
+    const handleGoogleLogin = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            const idToken = await user.getIdToken();
 
+            // Zapisz lub zaktualizuj dane użytkownika w Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                name: user.displayName,
+                photoURL: user.photoURL,
+                lastLogin: new Date(),
+                provider: 'google'
+            }, { merge: true });
+
+            localStorage.setItem('token', idToken);
+            onClose();
+        } catch (err) {
+            console.error(err);
+            setError("Błąd logowania przez Google: " + err.message);
+            setTimeout(() => setError(''), 4000);
+        }
+    };
     return (
         <div className={styles.registerBackground} onClick={onClose}>
             <div className={styles.registerBox} onClick={(e) => e.stopPropagation()}>
@@ -39,7 +70,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
                             borderColor='#B5B3BF'
                             borderRadius='0.5rem'
                             text='Continue with Google'
-                            onClick={() => console.log("Google login not yet implemented")}
+                            onClick={handleGoogleLogin}
                         />
                     </div>
 

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from '../../services/firebaseConfig'; // importuj auth z pliku firebase.js
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup  } from "firebase/auth";
+import { auth, db } from '../../services/firebaseConfig'; // importuj auth z pliku firebase.js
 import styles from './RegisterPopup.module.css';
 import Button from '../Button/Button';
-
+import { doc, setDoc } from "firebase/firestore";
 
 function RegisterPopup({ onClose }) {
     const [email, setEmail] = useState('');
@@ -19,11 +19,44 @@ function RegisterPopup({ onClose }) {
         }
 
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            // Zarejestruj użytkownika
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            // Zapisz dodatkowe dane użytkownika w Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                createdAt: new Date(),
+                lastLogin: new Date(),
+                // możesz dodać więcej pól
+            });
             onClose();
+
         } catch (err) {
             console.error(err);
             setError("Błąd podczas rejestracji: " + err.message);
+            setTimeout(() => setError(''), 4000);
+        }
+    };
+    const handleGoogleSignIn = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Zapisz lub zaktualizuj dane użytkownika w Firestore
+            await setDoc(doc(db, "users", user.uid), {
+                email: user.email,
+                name: user.displayName,
+                photoURL: user.photoURL,
+                createdAt: new Date(),
+                lastLogin: new Date(),
+                provider: 'google'
+            }, { merge: true }); // merge: true pozwala na aktualizację istniejących dokumentów
+
+            onClose();
+        } catch (err) {
+            console.error(err);
+            setError("Błąd podczas logowania przez Google: " + err.message);
             setTimeout(() => setError(''), 4000);
         }
     };
@@ -42,7 +75,7 @@ function RegisterPopup({ onClose }) {
                             borderColor='#B5B3BF'
                             borderRadius='0.5rem'
                             text='Continue with Google'
-                            onClick={() => console.log("Google login not yet implemented")}
+                            onClick={handleGoogleSignIn}
                         />
                     </div>
 
