@@ -4,6 +4,18 @@ import Button from '../Button/Button'
 import Card from '../OfferCard/OfferCard'
 
 function LoginPopup({onClose}) {
+    const freeClick = () => {
+        console.log('free pack');
+    }
+
+    const basicClick = () => {
+        console.log('basic pack');
+    }
+
+    const premiumClick = () => {
+        console.log('premium pack');
+    }
+
     return (
         <div className={styles.popupBackground}
         onClick={onClose}>
@@ -20,6 +32,7 @@ function LoginPopup({onClose}) {
                                 "CCC",
                                 "DDD"]} 
                             price='Free'   
+                            onClick={freeClick}
                         />
                 </div>
                 <div className={styles.cardWrapper}
@@ -35,6 +48,7 @@ function LoginPopup({onClose}) {
                                 "CCC",
                                 "DDD"]} 
                             price='50 zł / msc'   
+                            onClick={basicClick}
                         />
                     </div>
                 </div>
@@ -51,6 +65,7 @@ function LoginPopup({onClose}) {
                                 "CCC",
                                 "DDD"]} 
                             price='100 zł / msc'   
+                            onClick={premiumClick}
                         />
                     </div>
                 </div>

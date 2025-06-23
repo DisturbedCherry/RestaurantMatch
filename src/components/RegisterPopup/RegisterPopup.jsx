@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup  } 
 import { auth, db } from '../../services/firebaseConfig'; // importuj auth z pliku firebase.js
 import styles from './RegisterPopup.module.css';
 import Button from '../Button/Button';
+import { useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 
 function RegisterPopup({ onClose }) {
@@ -10,6 +11,8 @@ function RegisterPopup({ onClose }) {
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
     const [error, setError] = useState('');
+
+    const navigate = useNavigate(); 
 
     const handleRegister = async () => {
         if (password !== repeatPassword) {
@@ -30,6 +33,7 @@ function RegisterPopup({ onClose }) {
                 // możesz dodać więcej pól
             });
             onClose();
+            navigate('/Main');
 
         } catch (err) {
             console.error(err);
@@ -54,6 +58,7 @@ function RegisterPopup({ onClose }) {
             }, { merge: true }); // merge: true pozwala na aktualizację istniejących dokumentów
 
             onClose();
+            navigate('/Main');
         } catch (err) {
             console.error(err);
             setError("Błąd podczas logowania przez Google: " + err.message);

@@ -42,6 +42,7 @@ function Card(props) {
                     color="#FFFFFF"
                     borderRadius='0.5rem'
                     text='Wybieram pakiet'
+                    onClick={props.onClick}
                 />
             </div>
         </div>

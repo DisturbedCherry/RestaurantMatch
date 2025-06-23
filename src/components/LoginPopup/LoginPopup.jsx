@@ -3,12 +3,15 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 import { auth, db } from '../../services/firebaseConfig';
 import { doc, setDoc } from "firebase/firestore";
 import styles from './LoginPopup.module.css';
+import { useNavigate } from "react-router-dom";
 import Button from '../Button/Button';
 
 function LoginPopup({ onClose, onRegisterClick }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    const navigate = useNavigate(); 
 
     const handleLogin = async () => {
         try {
@@ -24,6 +27,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
             localStorage.setItem('token', idToken);
 
             onClose(); // zamknij popup po zalogowaniu
+            navigate('/Main');
         } catch (err) {
             console.error(err);
             setError("Błąd logowania: " + err.message);
@@ -48,6 +52,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
 
             localStorage.setItem('token', idToken);
             onClose();
+            navigate('/Main');
         } catch (err) {
             console.error(err);
             setError("Błąd logowania przez Google: " + err.message);
