@@ -5,11 +5,13 @@ import styles from './CentralPart.module.css';
 import Card from '../Card/Card';
 import Image from '../../../assets/food_placeholder.png';
 import Button from '../../Button/Button';
+import SearchPopup from "../../SearchPopup/SearchPopup";
 
 function CentralPart() {
     const [promotedRestaurants, setPromotedRestaurants] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [open, setOpen] = useState(false);
     
     const colors = ['#8E5AFF', '#0CBA88', '#FF8680', '#D5C338'];
 
@@ -61,6 +63,7 @@ function CentralPart() {
                             name={restaurant.nameOfRestaurant}
                             image={Image}
                             description={restaurant.description}
+                            link={restaurant.website}
                         />
                     </div>
                 ))}
@@ -68,11 +71,13 @@ function CentralPart() {
             <div className={styles.buttonContainer}>
                 <div className={styles.buttonWrapper}>
                     <Button 
+                        onClick={() => setOpen(true)}
                         backgroundColor='#5A7BFF'
                         color='#FFFFFF'
                         fontSize='2rem'
                         text='Chce znaleźć restaurację'
                     />
+                    <SearchPopup open={open} onClose={() => setOpen(false)} />
                 </div>
             </div>
         </div>

@@ -117,4 +117,21 @@
     min-width: 7.5rem;
     height: 100%;
 }
+
+.logoutBtn {
+    background: none;
+    border: none;
+    color: #F5F5FF;
+    text-decoration: none;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+    font: inherit; /* żeby font był taki sam jak reszta */
+}
+
+.logoutBtn:hover {
+    background-color: hsla(240, 20%, 20%, 0.8);
+}
 }
