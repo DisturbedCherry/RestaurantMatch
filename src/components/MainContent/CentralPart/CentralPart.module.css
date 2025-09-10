@@ -13,7 +13,8 @@
     grid-template-rows: repeat(2, 1fr);    /* 2 rows */
     gap: 1rem;
     width: 100%;
-    height: 80%;
+    height: 78%;
+    margin-bottom: 1rem;
 }
 
 .cardWrapper {

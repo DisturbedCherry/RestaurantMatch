@@ -3,6 +3,11 @@ import styles from './Card.module.css'
 
 // Card.jsx
 function Card(params) {
+    const handleClick = () => {
+        if (params.link) {
+            window.location.href = params.link
+        }
+    }
     return (
         <div style={{
             width: '100%',
@@ -30,6 +35,7 @@ function Card(params) {
                                 color='#FFFFFF'
                                 borderColor={params.color}
                                 text='Zamów teraz'
+                                onClick={handleClick}
                             />
                         </div>
                     </div>
