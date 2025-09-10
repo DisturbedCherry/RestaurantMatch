@@ -1,77 +1,77 @@
-// OfferPopup.jsx
+import { useState } from "react";
 import styles from './OfferPopup.module.css'
-import Button from '../Button/Button'
 import Card from '../OfferCard/OfferCard'
+import RegisterPopup from '../RegisterPopup/RegisterPopup'
 
-function LoginPopup({onClose}) {
-    const freeClick = () => {
-        console.log('free pack');
+function OfferPopup({ onClose }) {
+    const [registerOpen, setRegisterOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState(null);
+
+    // Open RegisterPopup with plan
+    const handleClick = (plan) => {
+        setSelectedPlan(plan);
+        setRegisterOpen(true);
     }
 
-    const basicClick = () => {
-        console.log('basic pack');
+    // Close RegisterPopup
+    const handleRegisterClose = () => {
+        setRegisterOpen(false);
     }
 
-    const premiumClick = () => {
-        console.log('premium pack');
+    // Only allow closing OfferPopup if RegisterPopup is not open
+    const handleBackgroundClick = () => {
+        if (!registerOpen) {
+            onClose();
+        }
     }
 
     return (
-        <div className={styles.popupBackground}
-        onClick={onClose}>
-            <div className={styles.cardsContainer}>
-                <div className={styles.cardWrapper}
-                onClick={(e) => e.stopPropagation()}>
+        <div className={styles.popupBackground} onClick={handleBackgroundClick}>
+            <div className={styles.cardsContainer} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.cardWrapper}>
                     <Card 
-                            title='Pakiet Free' 
-                            description='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean interdum, metus ut fringilla rutrum, dui risus egestas quam, id volutpat ante turpis eget justo. '
-                            specialColor='#0CBA88'
-                            list={[
-                                "AAA",
-                                "BBB",
-                                "CCC",
-                                "DDD"]} 
-                            price='Free'   
-                            onClick={freeClick}
-                        />
+                        title='Pakiet Free' 
+                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                        specialColor='#0CBA88'
+                        list={["AAA", "BBB", "CCC", "DDD"]} 
+                        price='Free'   
+                        onClick={() => handleClick("Free")}
+                    />
                 </div>
-                <div className={styles.cardWrapper}
-                onClick={(e) => e.stopPropagation()}>
-                    <div className={styles.card}>
-                        <Card 
-                            title='Pakiet Basic' 
-                            description='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean interdum, metus ut fringilla rutrum, dui risus egestas quam, id volutpat ante turpis eget justo. '
-                            specialColor='#D5C338'
-                            list={[
-                                "AAA",
-                                "BBB",
-                                "CCC",
-                                "DDD"]} 
-                            price='50 zł / msc'   
-                            onClick={basicClick}
-                        />
-                    </div>
+
+                <div className={styles.cardWrapper}>
+                    <Card 
+                        title='Pakiet Basic' 
+                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                        specialColor='#D5C338'
+                        list={["AAA", "BBB", "CCC", "DDD"]} 
+                        price='50 zł / msc'   
+                        onClick={() => handleClick("Basic")}
+                    />
                 </div>
-                <div className={styles.cardWrapper}
-                onClick={(e) => e.stopPropagation()}>
-                    <div className={styles.card}>
-                        <Card 
-                            title='Pakiet Premium' 
-                            description='Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean interdum, metus ut fringilla rutrum, dui risus egestas quam, id volutpat ante turpis eget justo. '
-                            specialColor='#FF8680'
-                            list={[
-                                "AAA",
-                                "BBB",
-                                "CCC",
-                                "DDD"]} 
-                            price='100 zł / msc'   
-                            onClick={premiumClick}
-                        />
-                    </div>
+
+                <div className={styles.cardWrapper}>
+                    <Card 
+                        title='Pakiet Premium' 
+                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                        specialColor='#FF8680'
+                        list={["AAA", "BBB", "CCC", "DDD"]} 
+                        price='100 zł / msc'   
+                        onClick={() => handleClick("Premium")}
+                    />
                 </div>
             </div>
+
+            {/* RegisterPopup */}
+            {registerOpen && (
+                <RegisterPopup
+                    onClose={handleRegisterClose}
+                    userType="owner"            // pass userType
+                    selectedPlan={selectedPlan} // pass selected plan
+                />
+            )}
         </div>
     )
 }
 
-export default LoginPopup;
+export default OfferPopup;

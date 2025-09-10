@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, db } from '../../services/firebaseConfig';
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import styles from './LoginPopup.module.css';
 import { useNavigate } from "react-router-dom";
 import Button from '../Button/Button';
@@ -17,17 +17,29 @@ function LoginPopup({ onClose, onRegisterClick }) {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const idToken = await userCredential.user.getIdToken();
+            const idToken = await user.getIdToken();
 
-            // Aktualizuj dane użytkownika w Firestore
+            // Update lastLogin and email
             await setDoc(doc(db, "users", user.uid), {
                 lastLogin: new Date(),
                 email: user.email
             }, { merge: true });
-            localStorage.setItem('token', idToken);
 
-            onClose(); // zamknij popup po zalogowaniu
-            navigate('/Main');
+            // Fetch userType
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const userData = userDoc.data();
+            const userType = userData?.userType || "customer";
+
+            localStorage.setItem('token', idToken);
+            onClose();
+
+            // Redirect based on userType
+            if (userType === "owner") {
+                navigate("/ControlPanel");
+            } else {
+                navigate("/Main");
+            }
+
         } catch (err) {
             console.error(err);
             setError("Błąd logowania: " + err.message);
@@ -41,7 +53,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
             const user = result.user;
             const idToken = await user.getIdToken();
 
-            // Zapisz lub zaktualizuj dane użytkownika w Firestore
+            // Save or update user in Firestore
             await setDoc(doc(db, "users", user.uid), {
                 email: user.email,
                 name: user.displayName,
@@ -50,12 +62,23 @@ function LoginPopup({ onClose, onRegisterClick }) {
                 provider: 'google'
             }, { merge: true });
 
+            // Fetch userType
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const userData = userDoc.data();
+            const userType = userData?.userType || "customer";
+
             localStorage.setItem('token', idToken);
             onClose();
-            navigate('/Main');
+
+            if (userType === "owner") {
+                navigate("/ControlPanel");
+            } else {
+                navigate("/Main");
+            }
+
         } catch (err) {
             console.error(err);
-            setError("Błąd logowania przez Google: " + err.message);
+            setError("Błąd podczas logowania przez Google: " + err.message);
             setTimeout(() => setError(''), 4000);
         }
     };
