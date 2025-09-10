@@ -41,7 +41,7 @@ function WelcomePage() {
     return (
         <div className={styles.welcomePage}>
             {showOfferPopup && <OfferPopup onClose={() => setShowOfferPopup(false)} />}
-            {showRegisterPopup && <RegisterPopup onClose={() => setShowRegisterPopup(false)} />}
+            {showRegisterPopup && <RegisterPopup onClose={() => setShowRegisterPopup(false)} userType={"consument"}/>}
             {showLoginPopup && (
             <LoginPopup 
                 onClose={() => setShowLoginPopup(false)} 

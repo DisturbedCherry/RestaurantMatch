@@ -6,7 +6,7 @@ import Button from '../Button/Button';
 import { useNavigate } from "react-router-dom";
 import { doc, setDoc } from "firebase/firestore";
 
-function RegisterPopup({ onClose }) {
+function RegisterPopup({ onClose, userType, selectedPlan }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [repeatPassword, setRepeatPassword] = useState('');
@@ -17,7 +17,7 @@ function RegisterPopup({ onClose }) {
     const handleRegister = async () => {
         if (password !== repeatPassword) {
             setError("Hasła nie są takie same.");
-            setTimeout(() => setError(''), 4000); // czyści błąd po 4 sekundach
+            setTimeout(() => setError(''), 4000);
             return;
         }
 
@@ -25,15 +25,30 @@ function RegisterPopup({ onClose }) {
             // Zarejestruj użytkownika
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            // Zapisz dodatkowe dane użytkownika w Firestore
-            await setDoc(doc(db, "users", user.uid), {
+
+            // Stwórz obiekt z danymi użytkownika
+            const userData = {
                 email: user.email,
                 createdAt: new Date(),
                 lastLogin: new Date(),
-                // możesz dodać więcej pól
-            });
+                userType: userType
+            };
+
+            // Dodaj selectedPlan jeśli istnieje
+            if (selectedPlan) {
+                userData.selectedPlan = selectedPlan;
+            }
+
+            // Zapisz dane w Firestore
+            await setDoc(doc(db, "users", user.uid), userData);
+
             onClose();
-            navigate('/Main');
+            if (selectedPlan) {
+                navigate('/ControlPanel');
+            } else {
+                navigate('/Main');
+            }
+            
 
         } catch (err) {
             console.error(err);
@@ -47,18 +62,32 @@ function RegisterPopup({ onClose }) {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            // Zapisz lub zaktualizuj dane użytkownika w Firestore
-            await setDoc(doc(db, "users", user.uid), {
+            // Prepare user data
+            const userData = {
                 email: user.email,
                 name: user.displayName,
                 photoURL: user.photoURL,
                 createdAt: new Date(),
                 lastLogin: new Date(),
-                provider: 'google'
-            }, { merge: true }); // merge: true pozwala na aktualizację istniejących dokumentów
+                provider: 'google',
+                userType: userType // use the prop passed to RegisterPopup
+            };
+
+            // Add selectedPlan if it exists
+            if (selectedPlan) {
+                userData.selectedPlan = selectedPlan;
+            }
+
+            // Save or merge user data in Firestore
+            await setDoc(doc(db, "users", user.uid), userData, { merge: true });
 
             onClose();
-            navigate('/Main');
+            if (selectedPlan || userType === 'owner') {
+                navigate('/ControlPanel');
+            } else {
+                navigate('/Main');
+            }
+
         } catch (err) {
             console.error(err);
             setError("Błąd podczas logowania przez Google: " + err.message);
