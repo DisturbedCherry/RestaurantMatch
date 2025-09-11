@@ -1,16 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
-import { loadStripe } from '@stripe/stripe-js';
+import { doc, getDoc, getFirestore, setDoc, collection, addDoc, onSnapshot } from "firebase/firestore";
 import styles from './AddRestaurantPage.module.css';
-// Twój klucz publiczny Stripe
-const stripePromise = loadStripe('pk_test_51RYnFO1ZncWnkPPTWn72XCVdb0QnH8AbGiiUGaKAqXWJZc0QDzNP4a4WNYY8kezDwyqsX32xtP26dAjZCaeNEfJH00olvH233W');
-// ID Twoich planów subskrypcyjnych ze Stripe
-const subscriptionPriceIds = {
-    'Basic': 'price_1RYnMo1ZncWnkPPTQLofRgXd',
-    'Premium': 'price_1RYnN11ZncWnkPPTYtVw47nW',
-};
 
 export default function AddRestaurantPage() {
     const auth = getAuth();
@@ -24,6 +16,12 @@ export default function AddRestaurantPage() {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("");
 
+    // Mapowanie planów na znane ID cen w Stripe
+    const planToPriceId = {
+        'Basic': 'price_1RYnMo1ZncWnkPPTQLofRgXd',
+        'Premium': 'price_1RYnN11ZncWnkPPTYtVw47nW'
+    };
+
     useEffect(() => {
         const fetchUserData = async () => {
             const user = auth.currentUser;
@@ -33,7 +31,7 @@ export default function AddRestaurantPage() {
             }
 
             try {
-                // POBIERAMY Z DOKUMENTU USERS
+                // Pobierz dane użytkownika
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
@@ -41,7 +39,8 @@ export default function AddRestaurantPage() {
                     const data = docSnap.data();
                     if (data.selectedPlan) {
                         setSelectedPlan(data.selectedPlan);
-                        // Teraz możemy opcjonalnie spróbować pobrać dane restauracji, jeśli już istnieją
+                        
+                        // Spróbuj pobrać istniejące dane restauracji
                         const restaurantDocRef = doc(db, "restaurants", user.uid);
                         const restaurantDocSnap = await getDoc(restaurantDocRef);
                         if (restaurantDocSnap.exists()) {
@@ -52,12 +51,10 @@ export default function AddRestaurantPage() {
                         }
                         setStatus("");
                     } else {
-                        // Jeśli w dokumencie 'users' nie ma selectedPlan, to jest błąd w przepływie
                         setStatus("Nie znaleziono wybranego planu. Proszę wrócić i wybrać plan.");
                         setTimeout(() => navigate('/'), 3000);
                     }
                 } else {
-                    // Użytkownik jest zalogowany, ale jego dokument nie istnieje. To też jest błąd.
                     setStatus("Brak danych użytkownika. Proszę spróbować ponownie.");
                     setTimeout(() => navigate('/'), 3000);
                 }
@@ -71,7 +68,7 @@ export default function AddRestaurantPage() {
 
         fetchUserData();
     }, [auth, db, navigate]);
-    // const basicPlanPaymentLink = 'https://buy.stripe.com/test_4gM9AM9BZgUm0es2yi7g400';
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const user = auth.currentUser;
@@ -87,8 +84,9 @@ export default function AddRestaurantPage() {
         }
 
         try {
-            // TERAZ TWORZYMY LUB AKTUALIZUJEMY RESTAURACJĘ
-            await setDoc(doc(db, "restaurants", user.uid), {
+            // 1. Zapisz dane restauracji
+            const restaurantDocRef = doc(db, "restaurants", user.uid);
+            await setDoc(restaurantDocRef, {
                 nameOfRestaurant: name,
                 website,
                 description,
@@ -97,30 +95,49 @@ export default function AddRestaurantPage() {
                 isVerified: false,
                 creationDate: new Date(),
             }, { merge: true });
-            // window.location.href = basicPlanPaymentLink
-            const stripe = await stripePromise;
-            const priceId = subscriptionPriceIds[selectedPlan];
-            
+
+            // 2. Znajdź ID ceny na podstawie wybranego planu
+            const priceId = planToPriceId[selectedPlan];
             if (!priceId) {
-                setStatus("Błąd: Nieprawidłowy plan płatności.");
-                return;
+                throw new Error(`Nie znaleziono ID ceny dla planu: ${selectedPlan}`);
             }
 
-            await stripe.redirectToCheckout({
-                lineItems: [{ price: priceId, quantity: 1 }],
-                mode: 'subscription',
-                successUrl: `${window.location.origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
-                // successUrl: `${window.location.origin}/checkout-success`,
-                cancelUrl: `${window.location.origin}/`,
-                customerEmail: user.email,
+            setStatus("Tworzenie sesji płatności...");
+            
+            // 3. Utwórz sesję płatności używając kolekcji checkout_sessions
+            const checkoutSessionRef = await addDoc(
+                collection(db, "users", user.uid, "checkout_sessions"),
+                {
+                    price: priceId,
+                    success_url: `${window.location.origin}/checkout-success`,
+                    cancel_url: `${window.location.origin}/`,
+                    metadata: {
+                        restaurantId: user.uid
+                    }
+                }
+            );
+            
+            // 4. Nasłuchuj na aktualizacje dokumentu sesji
+            setStatus("Przygotowuję przekierowanie do płatności...");
+            onSnapshot(checkoutSessionRef, (snap) => {
+                const { error, url } = snap.data();
+                if (error) {
+                    // Pokaż błąd użytkownikowi
+                    console.error("Błąd sesji Stripe:", error);
+                    setStatus(`Wystąpił błąd: ${error.message}`);
+                }
+                if (url) {
+                    // Mamy URL sesji Stripe Checkout, przekierowujemy
+                    window.location.assign(url);
+                }
             });
-
         } catch (error) {
             console.error("Błąd podczas zapisywania danych lub płatności:", error);
-            setStatus("Wystąpił błąd. Spróbuj ponownie.");
+            setStatus("Wystąpił błąd. Spróbuj ponownie: " + error.message);
         }
     };
     
+    // Pozostała część komponentu (render, loading, itd.)
     if (loading) {
         return (
             <div className={styles.formBackground}>
