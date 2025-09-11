@@ -1,0 +1,127 @@
+/* AddRestaurantPage.module.css */
+
+.formBackground {
+    position: fixed; 
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(218, 212, 224, 0.3);
+    z-index: 999;
+    backdrop-filter: blur(3px); 
+}
+
+.formBox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: #1E1825;
+    width: min(70vh, 70%); /* Nieco większy, aby pomieścić więcej pól */
+    height: 80vh;
+    border-radius: 2rem;
+    border: #8E5AFF 2px solid;
+    padding: 2rem;
+}
+
+.content {
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    flex-direction: column;
+    gap: 1.5rem; /* Zwiększony odstęp, by formularz był czytelniejszy */
+}
+
+.titleWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #8E5AFF;
+    font-weight: bold;
+    font-size: 2rem;
+    width: 100%;
+    text-align: center;
+}
+
+.formElement {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formLabel {
+    color: #B5B3BF;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.formInput, .formTextarea {
+    width: 100%;
+    font-size: 0.9rem;
+    border-radius: 0.5rem;
+    background-color: #1E1825;
+    color: #FFFFFF;
+    padding: 1rem;
+    border: #B5B3BF 2px solid;
+    box-sizing: border-box; /* Ważne, aby padding nie rozszerzał elementu */
+}
+
+.formInput:focus, .formTextarea:focus {
+    outline: none;
+    border-color: #8E5AFF;
+    box-shadow: 0 0 0 2px rgba(142, 90, 255, 0.25);
+}
+
+.submitButton {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #0CBA88; /* Użyty zielony kolor z Twojego przycisku */
+    color: #FFFFFF;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+    background-color: #09a174;
+}
+
+.statusMessage {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #ff4d4f;
+    color: white;
+    padding: 2rem 3rem;
+    border-radius: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    z-index: 1000;
+}
+
+.successMessage {
+    background-color: #0CBA88;
+}
+
+/* Dostosowanie do mniejszych ekranów */
+@media (max-width: 768px) {
+    .formBox {
+        width: 90%;
+        height: auto;
+        padding: 1.5rem;
+    }
+
+    .titleWrapper {
+        font-size: 1.5rem;
+    }
+}
