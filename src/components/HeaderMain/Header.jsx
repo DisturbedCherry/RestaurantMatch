@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../services/firebaseConfig';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '../../services/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import styles from './Header.module.css';
 import Logo from '../../assets/restaurant_match_logo_white_noborder.svg';
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [userName, setUserName] = useState('');
     const menuRef = useRef(null);
     const navigate = useNavigate();
 
@@ -16,9 +18,8 @@ function Header() {
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);                  // Firebase logout
-            localStorage.removeItem('token');     // usuń token
-            navigate('/');                   // przekieruj na stronę logowania
+            await signOut(auth);
+            navigate('/');
         } catch (err) {
             console.error('Błąd podczas wylogowania:', err);
         }
@@ -33,8 +34,28 @@ function Header() {
 
         document.addEventListener('mousedown', handleClickOutside);
 
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    if (data.name) {
+                        // take only first word before space
+                        setUserName(data.name.split(' ')[0]);
+                    } else if (data.email) {
+                        setUserName(data.email.split('@')[0]);
+                    }
+                }
+            } else {
+                setUserName('');
+            }
+        });
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            unsubscribe();
         };
     }, []);
 
@@ -54,7 +75,7 @@ function Header() {
                     className={styles.userMenuTrigger}
                     onClick={toggleMenu}
                 >
-                    Witaj, Jakub ▼
+                    Witaj{userName ? `, ${userName}` : ''} ▼
                 </div>
                 {isMenuOpen && (
                     <div className={styles.userMenu}>

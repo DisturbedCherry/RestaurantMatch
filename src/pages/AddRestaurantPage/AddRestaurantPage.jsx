@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"; // for paymentType param
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../../services/firebaseConfig"; // your firebase config
 
-export default function AddRestaurantPage() {
+export default function AddRestaurantPage({ selectedPlan }) {
   const { paymentType } = useParams(); // get param from URL
   const [name, setName] = useState("");
   const [website, setWebsite] = useState("");

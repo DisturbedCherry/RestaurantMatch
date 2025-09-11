@@ -31,9 +31,9 @@ function OfferPopup({ onClose }) {
                 <div className={styles.cardWrapper}>
                     <Card 
                         title='Pakiet Free' 
-                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                        description='Spraw, że Twoja restauracja zostanie zauważona przez innych.'
                         specialColor='#0CBA88'
-                        list={["AAA", "BBB", "CCC", "DDD"]} 
+                        list={["- Dostęp do panelu kontrolnego", "- Promocja nowych restauracji", "- Wyświetlanie w wyszukiwarce", "- Przekierowanie do strony"]} 
                         price='Free'   
                         onClick={() => handleClick("Free")}
                     />
@@ -42,10 +42,10 @@ function OfferPopup({ onClose }) {
                 <div className={styles.cardWrapper}>
                     <Card 
                         title='Pakiet Basic' 
-                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+                        description='Chcesz zwiększyć swoje obroty? Postaw na pakiet Basic!'
                         specialColor='#D5C338'
-                        list={["AAA", "BBB", "CCC", "DDD"]} 
-                        price='50 zł / msc'   
+                        list={["- Promocja na stronie głównej", "- Możliwość wyświetlania opisu", "- Możliwość dodania adresu", "- Wszystko z pakietu free"]} 
+                        price='899.99 zł'   
                         onClick={() => handleClick("Basic")}
                     />
                 </div>
@@ -53,11 +53,12 @@ function OfferPopup({ onClose }) {
                 <div className={styles.cardWrapper}>
                     <Card 
                         title='Pakiet Premium' 
-                        description='Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-                        specialColor='#FF8680'
-                        list={["AAA", "BBB", "CCC", "DDD"]} 
-                        price='100 zł / msc'   
+                        description='Pakiet planowany na przyszłe wersje.'
+                        specialColor='#6b6b6bff'
+                        list={["- ", "- ", "- ", "- "]} 
+                        price='???'   
                         onClick={() => handleClick("Premium")}
+                        disabled
                     />
                 </div>
             </div>

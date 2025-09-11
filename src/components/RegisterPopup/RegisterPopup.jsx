@@ -44,7 +44,7 @@ function RegisterPopup({ onClose, userType, selectedPlan }) {
 
             onClose();
             if (selectedPlan) {
-                navigate('/ControlPanel');
+                navigate(`/add-restaurant/${selectedPlan}`);
             } else {
                 navigate('/Main');
             }
@@ -70,7 +70,7 @@ function RegisterPopup({ onClose, userType, selectedPlan }) {
                 createdAt: new Date(),
                 lastLogin: new Date(),
                 provider: 'google',
-                userType: userType // use the prop passed to RegisterPopup
+                userType: userType  // use the prop passed to RegisterPopup
             };
 
             // Add selectedPlan if it exists
@@ -78,12 +78,11 @@ function RegisterPopup({ onClose, userType, selectedPlan }) {
                 userData.selectedPlan = selectedPlan;
             }
 
-            // Save or merge user data in Firestore
-            await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+            await setDoc(doc(db, "users", user.uid), userData);
 
             onClose();
             if (selectedPlan || userType === 'owner') {
-                navigate('/ControlPanel');
+                navigate(`/add-restaurant/${selectedPlan}`);
             } else {
                 navigate('/Main');
             }

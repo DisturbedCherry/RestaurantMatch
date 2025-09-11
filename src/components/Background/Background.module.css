@@ -4,7 +4,6 @@
     inset: 0;
     overflow: hidden;
     z-index: -999;
-    min-height: 100%;
 }
 
 .bokehCircle {

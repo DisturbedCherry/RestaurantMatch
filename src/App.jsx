@@ -13,7 +13,6 @@ function App() {
           <Route path="/" element={<WelcomePage />} />
           <Route path="/Main" element={<MainPage />} />
           <Route path="/add-restaurant/:paymentType" element={<AddRestaurantPage />} />
-          {/*<Route path="/ControlPanel" element={<AddRestaurantPage />} /> */}
         </Routes>
         </ BrowserRouter>
     </>
