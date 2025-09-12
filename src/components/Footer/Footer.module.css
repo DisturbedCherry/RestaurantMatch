@@ -52,4 +52,14 @@ li {
     font-size: 1.5rem;
     width: 20vw;
 }
+
+.link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}
+
 }

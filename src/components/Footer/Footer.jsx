@@ -1,5 +1,6 @@
 import styles from './Footer.module.css'
 import Logo from '../../assets/restaurant_match_logo_white_noborder.svg'
+import { Link } from 'react-router-dom';
 
 function Footer() {
     return (
@@ -10,8 +11,16 @@ function Footer() {
             <div className={styles.linksWrapper}>
                 <ul>
                     <li>O nas</li>
-                    <li>Polityka prywatności</li>
-                    <li>Regulamin</li>
+                    <li>
+                        <Link to="/privacy-policy" className={styles.link}>
+                            Polityka prywatności
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/terms" className={styles.link}>
+                            Regulamin
+                        </Link>
+                    </li>
                     <li>Pricing</li>
                     <li>Dane kontaktowe</li>
                 </ul>

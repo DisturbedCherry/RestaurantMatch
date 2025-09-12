@@ -10,6 +10,7 @@ import Offer from '../../components/Offer/Offer'
 import Footer from '../../components/Footer/Footer'
 import Background from '../../components/Background/Background'
 
+import CookieConsent from '../../components/CookieConsent/CookieConsent';
 import RegisterPopup from '../../components/RegisterPopup/RegisterPopup'
 import LoginPopup from '../../components/LoginPopup/LoginPopup'
 import OfferPopup from '../../components/OfferPopup/OfferPopup'
@@ -70,6 +71,9 @@ function WelcomePage() {
             />
             <Footer />
             <Background />
+
+            {/* cookie consent */}
+            <CookieConsent />
         </div>
     )
 }

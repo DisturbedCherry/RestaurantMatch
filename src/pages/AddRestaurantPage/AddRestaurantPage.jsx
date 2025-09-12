@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc, getFirestore, setDoc, collection, addDoc, onSnapshot } from "firebase/firestore";
@@ -13,15 +13,41 @@ export default function AddRestaurantPage() {
     const [name, setName] = useState("");
     const [website, setWebsite] = useState("");
     const [description, setDescription] = useState("");
+    const [address, setAddress] = useState("");
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("");
 
-    // Mapowanie planów na znane ID cen w Stripe
+    const addressRef = useRef(null); // ✅ Ref for Google Maps input
+
     const planToPriceId = {
         'Basic': 'price_1RYnMo1ZncWnkPPTQLofRgXd',
         'Premium': 'price_1RYnN11ZncWnkPPTYtVw47nW'
     };
 
+    // Load Google Maps script and initialize Autocomplete
+    useEffect(() => {
+        if (window.google && window.google.maps) return; // Already loaded
+
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+
+        script.onload = () => {
+            if (!addressRef.current) return;
+            const autocomplete = new window.google.maps.places.Autocomplete(addressRef.current, {
+                types: ["address"],
+                componentRestrictions: { country: "PL" },
+            });
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                setAddress(place.formatted_address || "");
+            });
+        };
+    }, []);
+
+    // Fetch user data and existing restaurant
     useEffect(() => {
         const fetchUserData = async () => {
             const user = auth.currentUser;
@@ -31,7 +57,6 @@ export default function AddRestaurantPage() {
             }
 
             try {
-                // Pobierz dane użytkownika
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
@@ -39,8 +64,7 @@ export default function AddRestaurantPage() {
                     const data = docSnap.data();
                     if (data.selectedPlan) {
                         setSelectedPlan(data.selectedPlan);
-                        
-                        // Spróbuj pobrać istniejące dane restauracji
+
                         const restaurantDocRef = doc(db, "restaurants", user.uid);
                         const restaurantDocSnap = await getDoc(restaurantDocRef);
                         if (restaurantDocSnap.exists()) {
@@ -48,6 +72,7 @@ export default function AddRestaurantPage() {
                             setName(restaurantData.nameOfRestaurant || "");
                             setWebsite(restaurantData.website || "");
                             setDescription(restaurantData.description || "");
+                            setAddress(restaurantData.address || "");
                         }
                         setStatus("");
                     } else {
@@ -72,72 +97,64 @@ export default function AddRestaurantPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const user = auth.currentUser;
-        
+
         if (!user || !selectedPlan) {
             setStatus("Błąd: Nie można przetworzyć formularza.");
             return;
         }
 
-        if (!name || !website) {
+        if (!name || !website || !address) {
             setStatus("Proszę wypełnić wszystkie wymagane pola.");
             return;
         }
 
         try {
-            // 1. Zapisz dane restauracji
             const restaurantDocRef = doc(db, "restaurants", user.uid);
             await setDoc(restaurantDocRef, {
                 nameOfRestaurant: name,
                 website,
                 description,
+                address,
                 ownerId: user.uid,
                 selectedPlan: selectedPlan,
                 isVerified: false,
                 creationDate: new Date(),
             }, { merge: true });
 
-            // 2. Znajdź ID ceny na podstawie wybranego planu
-            const priceId = planToPriceId[selectedPlan];
-            if (!priceId) {
-                throw new Error(`Nie znaleziono ID ceny dla planu: ${selectedPlan}`);
+            if (selectedPlan === "Free") {
+                navigate('/Main');
             }
 
+            const priceId = planToPriceId[selectedPlan];
+            if (!priceId) throw new Error(`Nie znaleziono ID ceny dla planu: ${selectedPlan}`);
+
             setStatus("Tworzenie sesji płatności...");
-            
-            // 3. Utwórz sesję płatności używając kolekcji checkout_sessions
+
             const checkoutSessionRef = await addDoc(
                 collection(db, "users", user.uid, "checkout_sessions"),
                 {
                     price: priceId,
                     success_url: `${window.location.origin}/checkout-success`,
                     cancel_url: `${window.location.origin}/`,
-                    metadata: {
-                        restaurantId: user.uid
-                    }
+                    metadata: { restaurantId: user.uid }
                 }
             );
-            
-            // 4. Nasłuchuj na aktualizacje dokumentu sesji
+
             setStatus("Przygotowuję przekierowanie do płatności...");
             onSnapshot(checkoutSessionRef, (snap) => {
                 const { error, url } = snap.data();
                 if (error) {
-                    // Pokaż błąd użytkownikowi
                     console.error("Błąd sesji Stripe:", error);
                     setStatus(`Wystąpił błąd: ${error.message}`);
                 }
-                if (url) {
-                    // Mamy URL sesji Stripe Checkout, przekierowujemy
-                    window.location.assign(url);
-                }
+                if (url) window.location.assign(url);
             });
         } catch (error) {
             console.error("Błąd podczas zapisywania danych lub płatności:", error);
             setStatus("Wystąpił błąd. Spróbuj ponownie: " + error.message);
         }
     };
-    
-    // Pozostała część komponentu (render, loading, itd.)
+
     if (loading) {
         return (
             <div className={styles.formBackground}>
@@ -149,7 +166,7 @@ export default function AddRestaurantPage() {
             </div>
         );
     }
-    
+
     if (!selectedPlan) {
         return (
             <div className={styles.formBackground}>
@@ -161,7 +178,7 @@ export default function AddRestaurantPage() {
             </div>
         );
     }
-    
+
     return (
         <div className={styles.formBackground}>
             <div className={styles.formBox}>
@@ -198,6 +215,20 @@ export default function AddRestaurantPage() {
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={4}
                                 className={styles.formTextarea}
+                                maxLength={150}
+                            />
+                        </div>
+                        <div className={styles.formElement}>
+                            <label htmlFor="address" className={styles.formLabel}>Adres *</label>
+                            <input
+                                id="address"
+                                type="text"
+                                ref={addressRef} // ✅ attach ref
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                required
+                                className={styles.formInput}
+                                placeholder="Wpisz adres restauracji"
                             />
                         </div>
                         <button type="submit" className={styles.submitButton}>

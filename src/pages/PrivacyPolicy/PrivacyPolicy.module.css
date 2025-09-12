@@ -1,0 +1,63 @@
+/* src/pages/PrivacyPolicy/PrivacyPolicy.module.css */
+
+.container {
+    max-width: 800px;          /* ogranicza szerokość dla czytelności */
+    margin: 2rem auto;         /* wycentrowanie i odstęp od góry/dół */
+    padding: 1rem 2rem;        /* wewnętrzny odstęp */
+    background-color: #1E1825; /* pasuje do kolorystyki serwisu */
+    color: #FFFFFF;            /* tekst biały */
+    border-radius: 1rem;       /* zaokrąglone rogi */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* lekki cień dla estetyki */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+    color: #FFD700; /* złoty akcent dla nagłówków */
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+li {
+    margin-bottom: 0.5rem;
+}
+
+a {
+    color: #FFD700;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Dodatkowo można dodać responsywność */
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+}

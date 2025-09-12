@@ -1,0 +1,101 @@
+/* src/pages/RestaurantDashboard/RestaurantDashboard.module.css */
+
+.formBackground {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* full viewport height */
+    background-color: #121018;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.formBox {
+    background-color: #1e1825;
+    border-radius: 12px;
+    padding: 30px 40px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.titleWrapper {
+    color: #fff;
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.formElement {
+    display: flex;
+    flex-direction: column;
+}
+
+.formLabel {
+    color: #ccc;
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+}
+
+.formInput,
+.formTextarea {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid #333;
+    background-color: #2a2336;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border 0.2s;
+}
+
+.formInput:focus,
+.formTextarea:focus {
+    border-color: #6b5bff;
+}
+
+.formTextarea {
+    resize: none;
+}
+
+.submitButton {
+    background-color: #6b5bff;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+    background-color: #5945d4;
+}
+
+.success {
+    color: #4caf50;
+    font-weight: bold;
+    text-align: center;
+}
+
+.error {
+    color: #f44336;
+    font-weight: bold;
+    text-align: center;
+}

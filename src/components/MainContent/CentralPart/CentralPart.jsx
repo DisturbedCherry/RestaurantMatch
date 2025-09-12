@@ -22,7 +22,7 @@ function CentralPart() {
                 setError(null);
                 
                 const restaurantsRef = collection(db, "restaurants");
-                const q = query(restaurantsRef, where("isPromoted", "==", true));
+                const q = query(restaurantsRef, where("selectedPlan", "==", "Basic"));
                 const querySnapshot = await getDocs(q);
                 
                 const restaurants = [];
@@ -32,8 +32,13 @@ function CentralPart() {
                         ...doc.data()
                     });
                 });
+
+                // Shuffle array
+                const shuffled = restaurants.sort(() => 0.5 - Math.random());
+                // Take only 4
+                const limited = shuffled.slice(0, 4);
                 
-                setPromotedRestaurants(restaurants);
+                setPromotedRestaurants(limited);
             } catch (error) {
                 console.error("Error fetching restaurants:", error);
                 setError("Nie udało się pobrać restauracji");
@@ -44,6 +49,7 @@ function CentralPart() {
 
         fetchPromotedRestaurants();
     }, []);
+
 
     if (isLoading) {
         return <div>Ładowanie...</div>;
@@ -64,6 +70,7 @@ function CentralPart() {
                             image={Image}
                             description={restaurant.description}
                             link={restaurant.website}
+                            address={restaurant.address} // ✅ pass address here
                         />
                     </div>
                 ))}

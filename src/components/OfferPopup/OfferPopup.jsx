@@ -41,18 +41,18 @@ function OfferPopup({ onClose }) {
 
                 <div className={styles.cardWrapper}>
                     <Card 
-                        title='Pakiet Basic' 
+                        title='Pakiet Premium' 
                         description='Chcesz zwiększyć swoje obroty? Postaw na pakiet Basic!'
                         specialColor='#D5C338'
                         list={["- Promocja na stronie głównej", "- Możliwość wyświetlania opisu", "- Możliwość dodania adresu", "- Wszystko z pakietu free"]} 
-                        price='899.99 zł'   
+                        price='100 zł / msc'   
                         onClick={() => handleClick("Basic")}
                     />
                 </div>
 
                 <div className={styles.cardWrapper}>
                     <Card 
-                        title='Pakiet Premium' 
+                        title='Pakiet Ultra' 
                         description='Pakiet planowany na przyszłe wersje.'
                         specialColor='#6b6b6bff'
                         list={["- ", "- ", "- ", "- "]} 

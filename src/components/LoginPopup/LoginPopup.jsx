@@ -35,7 +35,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
 
             // Redirect based on userType
             if (userType === "owner") {
-                navigate("/ControlPanel");
+                navigate("/dashboard");
             } else {
                 navigate("/Main");
             }
@@ -71,7 +71,7 @@ function LoginPopup({ onClose, onRegisterClick }) {
             onClose();
 
             if (userType === "owner") {
-                navigate("/ControlPanel");
+                navigate("/dashboard");
             } else {
                 navigate("/Main");
             }
