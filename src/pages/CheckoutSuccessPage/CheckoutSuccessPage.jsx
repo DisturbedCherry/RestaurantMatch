@@ -47,7 +47,7 @@ export default function CheckoutSuccessPage() {
                             updateRestaurantStatus(user.uid, subscription);
                             
                             setStatus("Płatność powiodła się! Twój plan jest aktywny. Przekierowuję do panelu...");
-                            setTimeout(() => navigate('/Main'), 3000);
+                            setTimeout(() => navigate('/dashboard'), 3000);
                         } else {
                             // Brak aktywnej subskrypcji, sprawdź tryb testowy
                             checkTestMode();
@@ -76,7 +76,7 @@ export default function CheckoutSuccessPage() {
                             testMode: true
                         }, { merge: true }).then(() => {
                             setStatus("Płatność testowa zaakceptowana. Przekierowuję do panelu...");
-                            setTimeout(() => navigate('/Main'), 3000);
+                            setTimeout(() => navigate('/dashboard'), 3000);
                         });
                     } else {
                         // Sprawdź checkout_sessions, aby zobaczyć, czy jest w toku
@@ -92,7 +92,7 @@ export default function CheckoutSuccessPage() {
                                 // Daj systemowi trochę czasu na przetworzenie płatności
                                 setTimeout(() => {
                                     setStatus("Przekierowuję do panelu...");
-                                    setTimeout(() => navigate('/Main'), 3000);
+                                    setTimeout(() => navigate('/dashboard'), 3000);
                                 }, 5000);
                             } else {
                                 setStatus("Nie znaleziono aktywnej subskrypcji. Przekierowuję...");
