@@ -23,26 +23,30 @@ export default function TabLayout() {
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: false,
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: {
+          backgroundColor: '#17172E', // Light mode background
+        },
       }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Promoted',
+          tabBarIcon: ({ color }) => <TabBarIcon name="fire" color={color} />,
+        }}
+      />
       <Tabs.Screen
         name="two"
         options={{
-          title: 'Promoted',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'New',
+          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
         }}
       />
       <Tabs.Screen
         name="three"
         options={{
-          title: 'New',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="four"
-        options={{
           title: 'Search',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
         }}
       />
     </Tabs>
