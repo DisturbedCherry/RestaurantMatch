@@ -1,8 +1,10 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from '@firebase/auth'
 import * as Facebook from 'expo-auth-session/providers/facebook'
+import { signInWithCredential, GoogleAuthProvider } from '@firebase/auth'
+import * as Google from 'expo-auth-session/providers/google'
 import { router } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Alert, Image, ImageBackground, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth } from '../FirebaseConfig'
@@ -20,13 +22,28 @@ const LoginScreen = () => {
     scopes: ['public_profile', 'email'], // Dodaj wymagane scopes
   });
 
+  // This is for Google
+  const [requestGoogle, responseGoogle, promptAsyncGoogle] = Google.useAuthRequest({
+    // Użyj swojego WEB Client ID z Firebase/Google Cloud
+    webClientId: '903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com'
+  });
+
+  useEffect(() => {
+    if (responseGoogle) {
+        console.log('DEBUG: Pełna odpowiedź Google:', responseGoogle.type);
+    }
+    if (responseGoogle?.type === 'success' && responseGoogle.authentication?.idToken) {
+        handleGoogleLogin(responseGoogle.authentication.idToken);
+    }
+  }, [responseGoogle])
+
   const signIn = async () => {
     try {
       setLoading(true);
       const user = await signInWithEmailAndPassword(auth, email, password);
       if (user) {
         console.log('Email Sign-In Successful:', user.user?.email);
-        router.replace('/(tabs)');
+      //  router.replace('/(tabs)');
       }
     } catch (error: any) {
       console.log('Email Sign-In Error:', error);
@@ -52,7 +69,7 @@ const LoginScreen = () => {
       const user = await createUserWithEmailAndPassword(auth, email, password);
       if (user) {
         console.log('Email Sign-Up Successful:', user.user?.email);
-        router.replace('/(tabs)');
+       // router.replace('/(tabs)');
       }
     } catch (error: any) {
       console.log('Email Sign-Up Error:', error);
@@ -72,8 +89,39 @@ const LoginScreen = () => {
     }
   }
 
+  const handleGoogleLogin = async (idToken: string) => {
+    try {
+      setLoading(true);
+      
+      // 1. Utwórz poświadczenie Firebase z tokenu ID Google
+      console.log('DEBUG: Krok 1 - Tworzę poświadczenie Firebase.');
+      const credential = GoogleAuthProvider.credential(idToken);
+      
+      // 2. Zaloguj użytkownika do Firebase
+      console.log('DEBUG: Krok 2 - Uruchamiam signInWithCredential...');
+      const userCredential = await signInWithCredential(auth, credential);
+
+      if (userCredential) {
+        console.log('Google Sign-In Successful:', userCredential.user?.email);
+        console.log('➡️ DEBUG: PRÓBUJĘ PRZEKIEROWAĆ DO /(tabs)...');
+       // router.replace('/(tabs)');
+        console.log('❌ DEBUG: BŁĄD! KOD PO REPLACE ZOSTAŁ WYKONANY. NAWIGACJA NIE ZADZIAŁAŁA.');
+      }
+    } catch (error : any) {
+      console.error('Google Sign-In Error:', error);
+      Alert.alert('Google Login Failed', 'Nie udało się zalogować przez Google.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGoogleSignInPress = () => {
-    Alert.alert('Social media login pressed', "yay...")
+    // Alert.alert('Social media login pressed', "yay...")
+    if (requestGoogle) {
+      promptAsyncGoogle();
+    } else {
+      Alert.alert('Błąd', 'Brak gotowego żądania uwierzytelniania Google. Sprawdź konfigurację Client ID.');
+    }
   }
 
 
