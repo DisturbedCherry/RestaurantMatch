@@ -1,9 +1,9 @@
 // app/_layout.tsx
 
-import { Stack, useSegments, useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../FirebaseConfig'; 
+import React, { useEffect } from 'react';
+import { auth } from '../FirebaseConfig';
 
 // 1. Centralny Hook Autoryzacyjny
 // Ten hook nasłuchuje stanu logowania w Firebase
@@ -32,29 +32,47 @@ const RootLayout = () => {
   const segments = useSegments(); 
   const router = useRouter(); 
 
-  // Ścieżka publiczna to 'index' (Twój ekran logowania)
-  const isPublicRoute = (segments[0] as string) === 'index'; 
-
   // 3. Logika Przekierowania
   useEffect(() => {
     // ⚠️ Krok 1: Czekaj, aż Firebase ustali stan (loading=false)
-    if (loading) return; 
+    if (loading) {
+      console.log('DEBUG (Layout): Czekam na ustalenie stanu autoryzacji...');
+      return; 
+    }
+
+    const currentSegment = segments[0] as string | undefined;
+    const segmentsString = segments.length > 0 ? segments.join('/') : '(root)';
+    
+    // Sprawdź czy jesteśmy na ekranie logowania (publiczna ścieżka)
+    // Ekran logowania to TYLKO gdy pierwszy segment to 'index' I NIE jesteśmy w '(tabs)'
+    // lub gdy brak segmentów (główna ścieżka)
+    const isInTabs = currentSegment === '(tabs)';
+    const isPublicRoute = (!currentSegment && !isInTabs) || (currentSegment === 'index' && !isInTabs);
+    
+    console.log('DEBUG (Layout): Stan użytkownika:', user ? 'Zalogowany' : 'Wylogowany', '| Segmenty:', segmentsString, '| isPublicRoute:', isPublicRoute, '| isInTabs:', isInTabs);
 
     // Krok 2: Użytkownik zalogowany -> przekieruj na chronioną ścieżkę
-    // Jeśli user istnieje I segmentem jest 'index' (publiczny)
-    if (user && isPublicRoute) {
-      console.log('REDIRECT: Zalogowany. Idę do / (tabs)');
-      router.replace('/(tabs)');
+    // UWAGA: Logowanie Google przekierowuje bezpośrednio do /(tabs)/two w app/index.tsx
+    // Tutaj przekierowujemy tylko jeśli użytkownik jest zalogowany przez email i jest na ekranie logowania
+    if (user) {
+      // Przekieruj TYLKO jeśli jesteśmy na ekranie logowania (nie jesteśmy już w zakładkach)
+      // Dla logowania Google przekierowanie jest obsługiwane bezpośrednio w handleGoogleLogin
+      if (isPublicRoute && !isInTabs) {
+        console.log('REDIRECT: Zalogowany (email). Idę do /(tabs)');
+        router.replace('/(tabs)');
+      }
     } 
     
     // Krok 3: Użytkownik wylogowany -> przekieruj na publiczną ścieżkę
-    // Jeśli user NIE istnieje I segmentem NIE JEST 'index' (chroniony)
-    else if (!user && !isPublicRoute) {
-      console.log('REDIRECT: Wylogowany. Idę do /');
-      router.replace('/'); 
+    else if (!user) {
+      // Przekieruj TYLKO jeśli NIE jesteśmy na ekranie logowania (jesteśmy w zakładkach)
+      if (!isPublicRoute && isInTabs) {
+        console.log('REDIRECT: Wylogowany. Idę do /');
+        router.replace('/'); 
+      }
     }
 
-  }, [user, loading, isPublicRoute, router]);
+  }, [user, loading, router, segments]);
 
 
   // 4. Renderowanie
