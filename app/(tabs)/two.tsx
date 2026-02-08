@@ -9,6 +9,8 @@ import {
   Image,
   ImageBackground,
   Linking,
+  Modal,
+  Pressable,
   StyleSheet,
   TouchableOpacity,
   View
@@ -17,20 +19,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { db } from '../../FirebaseConfig';
 
-// Define the type for your restaurant data
 interface Restaurant {
   id: string;
   nameOfRestaurant: string;
   description?: string;
   image?: string;
   website?: string;
-  // Add other fields you expect from Firestore
+  address?: string; // dodaj adres, jeśli chcesz otwierać Google Maps
   [key: string]: any;
 }
 
 export default function TabTwoScreen() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null); // stan dla modala
 
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -38,7 +40,7 @@ export default function TabTwoScreen() {
         const restaurantsRef = collection(db, "restaurants");
         const q = query(restaurantsRef, orderBy("__name__", "asc"), limit(5));
         const querySnapshot = await getDocs(q);
-        
+
         const data: Restaurant[] = [];
         querySnapshot.forEach((doc) => {
           data.push({
@@ -46,7 +48,7 @@ export default function TabTwoScreen() {
             ...doc.data()
           } as Restaurant);
         });
-        
+
         setRestaurants(data);
       } catch (error) {
         console.error("Error fetching restaurants:", error);
@@ -59,18 +61,15 @@ export default function TabTwoScreen() {
     fetchRestaurants();
   }, []);
 
-  // Function to open website
   const openWebsite = async (websiteUrl: string, restaurantName: string) => {
     try {
-      // Check if URL has protocol, add https:// if not
       let url = websiteUrl;
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = `https://${url}`;
       }
-      
-      // Check if the URL can be opened
+
       const supported = await Linking.canOpenURL(url);
-      
+
       if (supported) {
         await Linking.openURL(url);
       } else {
@@ -90,27 +89,27 @@ export default function TabTwoScreen() {
     }
   };
 
-  // Calculate card width to fit two cards per row with spacing
+  const openMaps = async (address: string) => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const supported = await Linking.canOpenURL(url);
+
+    if (supported) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert("Cannot open Maps", "Failed to open Google Maps");
+    }
+  };
+
   const screenWidth = Dimensions.get('window').width;
   const cardWidth = (screenWidth - 48) / 2;
 
   const renderRestaurantCard = ({ item }: { item: Restaurant }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.card, { width: cardWidth }]}
-      onPress={() => {
-        if (item.website) {
-          openWebsite(item.website, item.nameOfRestaurant);
-        } else {
-          Alert.alert(
-            "No Website Available",
-            `${item.nameOfRestaurant} doesn't have a website listed.`,
-            [{ text: "OK" }]
-          );
-        }
-      }}
+      onPress={() => setSelectedRestaurant(item)} // pokaż modal zamiast otwierać stronę
       activeOpacity={0.7}
     >
-      <Image 
+      <Image
         source={require("../../assets/images/food_placeholder.png")}
         style={styles.cardImage}
         resizeMode="cover"
@@ -128,7 +127,7 @@ export default function TabTwoScreen() {
 
   if (loading) {
     return (
-      <ImageBackground 
+      <ImageBackground
         source={require("../../assets/images/BackgroundDark.png")}
         style={styles.background}
       >
@@ -141,12 +140,13 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <ImageBackground 
+    <ImageBackground
       source={require("../../assets/images/BackgroundDark.png")}
       style={styles.background}
     >
       <SafeAreaView style={styles.container}>
         <Text style={styles.header}>Nowości</Text>
+
         {restaurants.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No restaurants found</Text>
@@ -162,42 +162,61 @@ export default function TabTwoScreen() {
             showsVerticalScrollIndicator={false}
           />
         )}
+
+        {/* Modal */}
+        <Modal
+          visible={selectedRestaurant !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedRestaurant(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{selectedRestaurant?.nameOfRestaurant}</Text>
+              <Text style={styles.modalDescription}>{selectedRestaurant?.description || "No description available"}</Text>
+
+              {/* Buttons */}
+              <View style={styles.modalButtons}>
+                {selectedRestaurant?.website && (
+                  <Pressable
+                    style={styles.modalButton}
+                    onPress={() => openWebsite(selectedRestaurant.website!, selectedRestaurant.nameOfRestaurant)}
+                  >
+                    <Text style={styles.modalButtonText}>Visit Website</Text>
+                  </Pressable>
+                )}
+                {selectedRestaurant?.address && (
+                  <Pressable
+                    style={[styles.modalButton, { backgroundColor: '#4caf50' }]}
+                    onPress={() => openMaps(selectedRestaurant.address!)}
+                  >
+                    <Text style={styles.modalButtonText}>Open in Maps</Text>
+                  </Pressable>
+                )}
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: '#f44336' }]}
+                  onPress={() => setSelectedRestaurant(null)}
+                >
+                  <Text style={styles.modalButtonText}>Close</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
       </SafeAreaView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#fff',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginVertical: 20,
-    textAlign: 'center',
-    color: '#fff',
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
+  background: { flex: 1 },
+  container: { flex: 1, paddingHorizontal: 16 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingText: { marginTop: 10, color: '#fff' },
+  header: { fontSize: 24, fontWeight: 'bold', marginVertical: 20, textAlign: 'center', color: '#fff' },
+  listContainer: { paddingBottom: 20 },
+  columnWrapper: { justifyContent: 'space-between', marginBottom: 16 },
   card: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,
@@ -208,57 +227,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  cardImage: {
-    width: '100%',
-    height: 120,
-    backgroundColor: '#e0e0e0',
-  },
-  cardContent: {
-    padding: 12,
-  },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-    color: '#fff',
-  },
-  restaurantDescription: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 16,
-    marginBottom: 8,
-  },
-  websiteContainer: {
-    backgroundColor: 'rgba(0, 122, 255, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  websiteText: {
-    fontSize: 11,
-    color: '#4dabf7',
-    fontWeight: '500',
-  },
-  noWebsiteContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginTop: 4,
-  },
-  noWebsiteText: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontStyle: 'italic',
-  },
-  emptyContainer: {
+  cardImage: { width: '100%', height: 120, backgroundColor: '#e0e0e0' },
+  cardContent: { padding: 12 },
+  restaurantName: { fontSize: 16, fontWeight: '600', marginBottom: 4, color: '#fff' },
+  restaurantDescription: { fontSize: 12, color: 'rgba(255, 255, 255, 0.7)', lineHeight: 16, marginBottom: 8 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  emptyText: { color: '#fff', fontSize: 16 },
+
+  // Modal styles
+  modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emptyText: {
-    color: '#fff',
-    fontSize: 16,
+  modalContent: {
+    width: '85%',
+    backgroundColor: '#222',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
   },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 12, textAlign: 'center' },
+  modalDescription: { fontSize: 14, color: '#ddd', marginBottom: 20, textAlign: 'center' },
+  modalButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10 },
+  modalButton: {
+    backgroundColor: '#1e88e5',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  modalButtonText: { color: '#fff', fontWeight: 'bold' },
 });

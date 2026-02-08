@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "903298888350",
+    "project_id": "restaurantmatch-ac7ed",
+    "storage_bucket": "restaurantmatch-ac7ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:903298888350:android:b8bb9baf61c21dbccac18f",
+        "android_client_info": {
+          "package_name": "com.disturbedcherry.restaurantmatch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeb7J2vV9a5OHS2aVRTRG9syvE5Ke3ES8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

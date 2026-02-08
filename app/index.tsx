@@ -1,13 +1,13 @@
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from '@firebase/auth'
-import { ResponseType } from 'expo-auth-session'
-import * as Facebook from 'expo-auth-session/providers/facebook'
-import * as Google from 'expo-auth-session/providers/google'
-import { router } from 'expo-router'
-import * as WebBrowser from 'expo-web-browser'
-import React, { useEffect, useState } from 'react'
-import { Alert, Image, ImageBackground, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { auth } from '../FirebaseConfig'
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from '@firebase/auth';
+import { makeRedirectUri, ResponseType } from 'expo-auth-session';
+import * as Facebook from 'expo-auth-session/providers/facebook';
+import * as Google from 'expo-auth-session/providers/google';
+import { router } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, ImageBackground, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from '../FirebaseConfig';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -30,12 +30,36 @@ const LoginScreen = () => {
   //   // Użyj swojego WEB Client ID z Firebase/Google Cloud
   //   webClientId: '903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com'
   // });
-  const [requestGoogle, responseGoogle, promptAsyncGoogle] = Google.useAuthRequest({
-    webClientId: '903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com',
-    // 🔧 DODAJ TO:
-    responseType: ResponseType.IdToken, // WAŻNE dla Firebase!
-    scopes: ['profile', 'email'],
+
+
+  // const [requestGoogle, responseGoogle, promptAsyncGoogle] = Google.useAuthRequest({
+  //   webClientId: '903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com',
+  //   // 🔧 DODAJ TO:
+  //   responseType: ResponseType.IdToken, // WAŻNE dla Firebase!
+  //   scopes: ['profile', 'email'],
+  // });
+
+  const [requestGoogle, responseGoogle, promptAsyncGoogle] =
+    Google.useAuthRequest({
+      // androidClientId:
+      //   "903298888350-38ou1hoa8mr3i50pins72gtblbvlodhe.apps.googleusercontent.com",
+      androidClientId:
+        "903298888350-38ou1hoa8mr3i50pins72gtblbvlodhe.apps.googleusercontent.com",
+      webClientId:
+        "903298888350-n3tghv2kv71o30lf4o12m00v1pude8v5.apps.googleusercontent.com",
+      responseType: ResponseType.IdToken,
+      scopes: ["profile", "email"],
+      redirectUri: makeRedirectUri({
+        useProxy: true,
+        scheme: 'restaurantmatch',
+  })
+
+      // redirectUri: 'https://auth.expo.io/@disturbedcherry/RestaurantMatch',
   });
+
+      
+    
+
   // useEffect(() => {
   //   // Wywołaj logowanie TYLKO gdy odpowiedź jest sukcesem i mamy token
   //   if (responseGoogle?.type === 'success' && responseGoogle.authentication?.idToken) {
