@@ -25,10 +25,11 @@ interface Restaurant {
   description?: string;
   website?: string;
   image?: string;
-  isPromoted?: boolean;
   selectedPlan?: string;
-  address?: string; // dodaj, jeśli chcesz otwierać Google Maps
+  address?: string;
 }
+
+const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY;
 
 const colors = ['#8E5AFF', '#0CBA88', '#FF8680', '#D5C338'];
 
@@ -36,7 +37,7 @@ export default function CentralPartScreen() {
   const [promotedRestaurants, setPromotedRestaurants] = useState<Restaurant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null); // modal
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
     const fetchPromotedRestaurants = async () => {
@@ -55,7 +56,7 @@ export default function CentralPartScreen() {
 
         setPromotedRestaurants(restaurants);
       } catch (err) {
-        console.error("Error fetching restaurants:", err);
+        console.error(err);
         setError("Nie udało się pobrać restauracji");
       } finally {
         setIsLoading(false);
@@ -64,6 +65,12 @@ export default function CentralPartScreen() {
 
     fetchPromotedRestaurants();
   }, []);
+
+  const getStaticMapUrl = (address: string) => {
+    const encoded = encodeURIComponent(address);
+
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${encoded}&zoom=15&size=600x300&markers=color:red|${encoded}&key=${GOOGLE_MAPS_KEY}`;
+  };
 
   const openWebsite = async (websiteUrl: string, restaurantName: string) => {
     try {
@@ -104,7 +111,7 @@ export default function CentralPartScreen() {
   const renderRestaurantCard = ({ item, index }: { item: Restaurant; index: number }) => (
     <TouchableOpacity
       style={[styles.card, { width: cardWidth }]}
-      onPress={() => setSelectedRestaurant(item)} // pokaż modal
+      onPress={() => setSelectedRestaurant(item)}
       activeOpacity={0.7}
     >
       <View style={[styles.cardHeader, { backgroundColor: colors[index % colors.length] }]}>
@@ -143,36 +150,6 @@ export default function CentralPartScreen() {
       <ImageBackground source={require("../../assets/images/BackgroundDark.png")} style={styles.background}>
         <SafeAreaView style={styles.errorContainer}>
           <Text style={styles.errorText}>Błąd: {error}</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => {
-              setError(null);
-              setIsLoading(true);
-              // Re-fetch
-              const fetchPromotedRestaurants = async () => {
-                try {
-                  const restaurantsRef = collection(db, "restaurants");
-                  const q = query(restaurantsRef, where("selectedPlan", "==", "Basic"));
-                  const querySnapshot = await getDocs(q);
-
-                  const restaurants: Restaurant[] = [];
-                  querySnapshot.forEach((doc) => {
-                    restaurants.push({ id: doc.id, ...doc.data() } as Restaurant);
-                  });
-
-                  setPromotedRestaurants(restaurants);
-                } catch (err) {
-                  console.error(err);
-                  setError("Nie udało się pobrać restauracji");
-                } finally {
-                  setIsLoading(false);
-                }
-              };
-              fetchPromotedRestaurants();
-            }}
-          >
-            <Text style={styles.retryButtonText}>Spróbuj ponownie</Text>
-          </TouchableOpacity>
         </SafeAreaView>
       </ImageBackground>
     );
@@ -183,31 +160,22 @@ export default function CentralPartScreen() {
       <SafeAreaView style={styles.container}>
         <Text style={styles.header}>Promowane Restauracje</Text>
 
-        {promotedRestaurants.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Brak promowanych restauracji</Text>
-            <Text style={styles.emptySubText}>
-              Obecnie żadna restauracja nie ma aktywnego planu promocyjnego.
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={promotedRestaurants}
-            renderItem={renderRestaurantCard}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.columnWrapper}
-            contentContainerStyle={styles.listContainer}
-            showsVerticalScrollIndicator={false}
-            ListFooterComponent={
-              <TouchableOpacity style={styles.findRestaurantButton} onPress={handleFindRestaurant} activeOpacity={0.8}>
-                <Text style={styles.findRestaurantButtonText}>Chcę znaleźć restaurację</Text>
-              </TouchableOpacity>
-            }
-          />
-        )}
+        <FlatList
+          data={promotedRestaurants}
+          renderItem={renderRestaurantCard}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          ListFooterComponent={
+            <TouchableOpacity style={styles.findRestaurantButton} onPress={handleFindRestaurant} activeOpacity={0.8}>
+              <Text style={styles.findRestaurantButtonText}>Chcę znaleźć restaurację</Text>
+            </TouchableOpacity>
+          }
+        />
 
-        {/* Modal */}
+        {/* MODAL */}
         <Modal
           visible={selectedRestaurant !== null}
           transparent
@@ -219,18 +187,40 @@ export default function CentralPartScreen() {
               <Text style={styles.modalTitle}>{selectedRestaurant?.nameOfRestaurant}</Text>
               <Text style={styles.modalDescription}>{selectedRestaurant?.description || "Brak opisu"}</Text>
 
+              {/* MINIMAPA */}
+              {selectedRestaurant?.address && (
+                <TouchableOpacity
+                  style={styles.map}
+                  activeOpacity={0.9}
+                  onPress={() => openMaps(selectedRestaurant.address!)}
+                >
+                  <Image
+                    source={{ uri: getStaticMapUrl(selectedRestaurant.address) }}
+                    style={styles.map}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              )}
+
               <View style={styles.modalButtons}>
                 {selectedRestaurant?.website && (
-                  <Pressable style={styles.modalButton} onPress={() => openWebsite(selectedRestaurant.website!, selectedRestaurant.nameOfRestaurant)}>
+                  <Pressable
+                    style={styles.modalButton}
+                    onPress={() =>
+                      openWebsite(
+                        selectedRestaurant.website!,
+                        selectedRestaurant.nameOfRestaurant
+                      )
+                    }
+                  >
                     <Text style={styles.modalButtonText}>Odwiedź stronę</Text>
                   </Pressable>
                 )}
-                {selectedRestaurant?.address && (
-                  <Pressable style={[styles.modalButton, { backgroundColor: '#4caf50' }]} onPress={() => openMaps(selectedRestaurant.address!)}>
-                    <Text style={styles.modalButtonText}>Pokaż w Maps</Text>
-                  </Pressable>
-                )}
-                <Pressable style={[styles.modalButton, { backgroundColor: '#f44336' }]} onPress={() => setSelectedRestaurant(null)}>
+
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: '#f44336' }]}
+                  onPress={() => setSelectedRestaurant(null)}
+                >
                   <Text style={styles.modalButtonText}>Zamknij</Text>
                 </Pressable>
               </View>
@@ -249,29 +239,57 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 10, color: '#fff', fontSize: 16 },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
   errorText: { color: '#ff6b6b', fontSize: 16, textAlign: 'center', marginBottom: 20 },
-  retryButton: { backgroundColor: '#8E5AFF', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
-  retryButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   header: { fontSize: 24, fontWeight: 'bold', marginVertical: 20, textAlign: 'center', color: '#fff' },
   listContainer: { paddingBottom: 20 },
   columnWrapper: { justifyContent: 'space-between', marginBottom: 16 },
-  card: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 12, overflow: 'hidden', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.2, shadowRadius: 5 },
+
+  card: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   cardHeader: { position: 'relative', height: 120 },
-  promotedBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: 10, fontWeight: 'bold', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4, zIndex: 1 },
-  cardImage: { width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.3)' },
+  promotedBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    zIndex: 1
+  },
+  cardImage: { width: '100%', height: '100%' },
   cardContent: { padding: 12 },
   restaurantName: { fontSize: 16, fontWeight: '600', marginBottom: 4, color: '#fff' },
-  restaurantDescription: { fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 16, marginBottom: 8 },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
-  emptyText: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 10, textAlign: 'center' },
-  emptySubText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  findRestaurantButton: { backgroundColor: '#8E5AFF', borderRadius: 12, paddingVertical: 16, paddingHorizontal: 20, alignItems: 'center', marginTop: 24, marginHorizontal: 20, elevation: 3, shadowColor: '#8E5AFF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4 },
+  restaurantDescription: { fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: 16 },
+
+  findRestaurantButton: {
+    backgroundColor: '#8E5AFF',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginTop: 24,
+    marginHorizontal: 20
+  },
   findRestaurantButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
-  // Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { width: '85%', backgroundColor: '#222', borderRadius: 16, padding: 20, alignItems: 'center' },
   modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 12, textAlign: 'center' },
-  modalDescription: { fontSize: 14, color: '#ddd', marginBottom: 20, textAlign: 'center' },
+  modalDescription: { fontSize: 14, color: '#ddd', marginBottom: 16, textAlign: 'center' },
+
+  map: {
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+
   modalButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10 },
   modalButton: { backgroundColor: '#1e88e5', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
   modalButtonText: { color: '#fff', fontWeight: 'bold' },

@@ -25,10 +25,12 @@ interface Restaurant {
   image?: string;
 }
 
+const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY;
+
 export default function TabTwoScreen() {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState<Restaurant[]>([]);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null); // modal
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
 
   useEffect(() => {
     if (!search) {
@@ -53,6 +55,12 @@ export default function TabTwoScreen() {
     return () => unsubscribe();
   }, [search]);
 
+  const getStaticMapUrl = (address: string) => {
+    const encoded = encodeURIComponent(address);
+
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${encoded}&zoom=15&size=600x300&markers=color:red|${encoded}&key=${GOOGLE_MAPS_KEY}`;
+  };
+
   const openWebsite = async (websiteUrl: string, restaurantName: string) => {
     try {
       let url = websiteUrl;
@@ -73,13 +81,7 @@ export default function TabTwoScreen() {
 
   const openMaps = (address: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-    Linking.canOpenURL(url).then((supported) => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        alert("Nie udało się otworzyć Google Maps");
-      }
-    });
+    Linking.openURL(url);
   };
 
   return (
@@ -104,7 +106,7 @@ export default function TabTwoScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity 
               style={styles.resultCard}
-              onPress={() => setSelectedRestaurant(item)} // pokaż modal
+              onPress={() => setSelectedRestaurant(item)}
             >
               <Text style={styles.resultText}>{item.nameOfRestaurant}</Text>
             </TouchableOpacity>
@@ -118,7 +120,7 @@ export default function TabTwoScreen() {
           }
         />
 
-        {/* Modal */}
+        {/* MODAL */}
         <Modal
           visible={selectedRestaurant !== null}
           transparent
@@ -130,21 +132,47 @@ export default function TabTwoScreen() {
               {selectedRestaurant?.image && (
                 <Image source={{ uri: selectedRestaurant.image }} style={styles.modalImage} resizeMode="cover" />
               )}
+
               <Text style={styles.modalTitle}>{selectedRestaurant?.nameOfRestaurant}</Text>
-              <Text style={styles.modalDescription}>{selectedRestaurant?.description || "Brak opisu"}</Text>
+
+              <Text style={styles.modalDescription}>
+                {selectedRestaurant?.description || "Brak opisu"}
+              </Text>
+
+              {/* MINIMAPA */}
+              {selectedRestaurant?.address && (
+                <TouchableOpacity
+                  style={styles.map}
+                  activeOpacity={0.9}
+                  onPress={() => openMaps(selectedRestaurant.address!)}
+                >
+                  <Image
+                    source={{ uri: getStaticMapUrl(selectedRestaurant.address) }}
+                    style={styles.map}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              )}
 
               <View style={styles.modalButtons}>
                 {selectedRestaurant?.website && (
-                  <Pressable style={styles.modalButton} onPress={() => openWebsite(selectedRestaurant.website!, selectedRestaurant.nameOfRestaurant)}>
+                  <Pressable
+                    style={styles.modalButton}
+                    onPress={() =>
+                      openWebsite(
+                        selectedRestaurant.website!,
+                        selectedRestaurant.nameOfRestaurant
+                      )
+                    }
+                  >
                     <Text style={styles.modalButtonText}>Odwiedź stronę</Text>
                   </Pressable>
                 )}
-                {selectedRestaurant?.address && (
-                  <Pressable style={[styles.modalButton, { backgroundColor: '#4caf50' }]} onPress={() => openMaps(selectedRestaurant.address!)}>
-                    <Text style={styles.modalButtonText}>Pokaż w Maps</Text>
-                  </Pressable>
-                )}
-                <Pressable style={[styles.modalButton, { backgroundColor: '#f44336' }]} onPress={() => setSelectedRestaurant(null)}>
+
+                <Pressable
+                  style={[styles.modalButton, { backgroundColor: '#f44336' }]}
+                  onPress={() => setSelectedRestaurant(null)}
+                >
                   <Text style={styles.modalButtonText}>Zamknij</Text>
                 </Pressable>
               </View>
@@ -158,29 +186,43 @@ export default function TabTwoScreen() {
 
 const styles = StyleSheet.create({
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 16, textAlign: "center", color: "#FFF" },
+
   input: { 
     borderWidth: 1, borderColor: '#FFF',
     padding: 12, marginBottom: 16,
     borderRadius: 8, fontSize: 16,
     color: "#FFF", height: 60, backgroundColor: "#1E1825", paddingLeft: 16
   },
+
   resultCard: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
     backgroundColor: '#f9f9f9',
     marginBottom: 8,
     borderRadius: 8,
   },
+
   resultText: { fontSize: 16, fontWeight: '500' },
-  emptyText: { textAlign: 'center', color: '#666', marginTop: 20 },
+  emptyText: { textAlign: 'center', color: '#ccc', marginTop: 20 },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { width: '85%', backgroundColor: '#222', borderRadius: 16, padding: 20, alignItems: 'center' },
+
   modalImage: { width: '100%', height: 150, borderRadius: 12, marginBottom: 12 },
+
   modalTitle: { fontSize: 20, fontWeight: 'bold', color: '#fff', marginBottom: 12, textAlign: 'center' },
-  modalDescription: { fontSize: 14, color: '#ddd', marginBottom: 20, textAlign: 'center' },
+
+  modalDescription: { fontSize: 14, color: '#ddd', marginBottom: 16, textAlign: 'center' },
+
+  map: {
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+
   modalButtons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10 },
+
   modalButton: { backgroundColor: '#1e88e5', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+
   modalButtonText: { color: '#fff', fontWeight: 'bold' },
 });
